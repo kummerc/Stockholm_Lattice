@@ -152,7 +152,9 @@ double u_sweep_metro(void)
   int iacc;
   double acc;
   clock_t start, end;
+  double Metro_time;
 
+  Metro_time=0;
   iacc = 0;
 
   for (t = 0; t < LT; t++)
@@ -215,12 +217,12 @@ double u_sweep_metro(void)
               }
             }
             end = clock();
-            printf("Time metro_hits(): %f s\n", ((double) (end - start)) / CLOCKS_PER_SEC);
+            Metro_time += ((double) (end - start)) / CLOCKS_PER_SEC;
           }
         }
 
   acc = iacc / (double) (METRO_NHIT * NLINK);
-
+  printf("Time for Metropolis update = %f\n",Metro_time);
   return acc;
 }
 

@@ -57,6 +57,8 @@ int main()
   printf("# beta  = %f\n", BETA);
   printf("# uinit = %d\n", UINIT);
   printf("# nhit  = %d\n", METRO_NHIT);
+  printf("# LS    = %d\n", LS);
+  printf("# LT    = %d\n", LT);  
   printf("#\n");
   printf("# update  plaquette  acceptance\n");
 
