@@ -215,7 +215,7 @@ double u_sweep_metro(void)
               }
             }
             end = clock();
-            printf("Time metro_hits(): %f s\n", ((double) (end - start)) / CLOCKS_PER_SEC;);
+            printf("Time metro_hits(): %f s\n", ((double) (end - start)) / CLOCKS_PER_SEC);
           }
         }
 
