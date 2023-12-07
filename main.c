@@ -36,6 +36,7 @@
 #include "geom.h"
 #include "rng.h"
 #include "u.h"
+#include <time.h>
 
 //--------------------------------------------------------------------------------------------------
 //! Main routine
@@ -43,6 +44,9 @@
 
 int main()
 {
+  clock_t start, end, start_metro, end_metro, start_plaq, end_plaq;
+  double time_taken;
+
   int i;
 
   // Initialisation routines
@@ -56,14 +60,26 @@ int main()
   printf("#\n");
   printf("# update  plaquette  acceptance\n");
 
+
+  start = clock();  
   // Update gauge fields and print plaquette
   for (i = 0; i < METRO_NSWEEP; i++)
   {
     double acc;
+    start_metro = clock();
     acc = u_sweep_metro();
+    end_metro = clock();
+    printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC;);
+
+    start_plaq = clock();
     printf("%6d     %.6e     %.2e\n", i, acc, u_plaq());
+    end_plaq = clock();
+    printf("Time u_sweep_metro(): %f s\n", ((double) (end_plaq - start_plaq)) / CLOCKS_PER_SEC;);
     fflush(stdout);
   }
+  end = clock();
+  time_taken = ((double) (end - start)) / CLOCKS_PER_SEC;
+  printf("Time main loop: %f s\n", time_taken);
 
   return 0;
 }
