@@ -36,6 +36,7 @@
 #include "rng.h"
 #include "geom.h"
 #include "u.h"
+#include <time.h>
 
 // Include specialized functions
 #if defined(U_SIMPLE)
@@ -150,6 +151,7 @@ double u_sweep_metro(void)
   SU3 staple;
   int iacc;
   double acc;
+  clock_t start, end;
 
   iacc = 0;
 
@@ -198,6 +200,7 @@ double u_sweep_metro(void)
                 u_accum(&staple, &t1);
               }
 
+            start = clock();
             // Perform multiple hits
             for (ihit = 0; ihit < METRO_NHIT; ihit++)
             {
@@ -211,6 +214,8 @@ double u_sweep_metro(void)
                 iacc++;
               }
             }
+            end = clock();
+            printf("Time metro_hits(): %f s\n", ((double) (end - start)) / CLOCKS_PER_SEC;);
           }
         }
 
