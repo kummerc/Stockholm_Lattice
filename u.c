@@ -37,7 +37,7 @@
 #include "geom.h"
 #include "u.h"
 #include <time.h>
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 // Include specialized functions
 #if defined(U_SIMPLE)
@@ -79,7 +79,6 @@ void u_init(void)
 
 double u_plaq(void)
 {
-  int i, j;
   double plaq;
 
   plaq = 0.0;
