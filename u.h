@@ -64,6 +64,6 @@ void u_norm_row(SU3*, int);
 void u_orthog_rows(SU3*, int, int);
 void u_cross_rows(SU3*, int, int, int);
 void u_reunitarise(SU3*);
-complex double u_det(SU3*);
+std::complex<double> u_det(SU3*);
 
 #endif

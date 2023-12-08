@@ -44,7 +44,7 @@ inline static double rng(void)
   return drand48();
 }
 
-inline static double std::complex<double> crng(void)
+inline static std::complex<double> crng(void)
 {
   double i, r;
 

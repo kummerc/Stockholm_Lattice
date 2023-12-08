@@ -34,21 +34,21 @@
 
 TARGET   = uedu
 SRC      = main.cpp common.cpp geom.cpp rng.cpp u.cpp
-CC       = acpp
+CC       = g++
 CFLAGS   = -O3 -DU_SIMPLE
 
 .PHONY: clean veryclean dep
 
 all:	${TARGET}
 
-uedu:	${SRC:%.c=%.o}
+uedu:	${SRC:%.cpp=%.o}
 	${CC} -o $@ $^ -lm
 
-%.o:	%.c
+%.o:	%.cpp
 	${CC} ${CFLAGS} -c $<
 
 clean:
-	-rm -f ${SRC:%.c=%.o}
+	-rm -f ${SRC:%.cpp=%.o}
 	-rm -f depend.mk
 
 veryclean: clean
