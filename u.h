@@ -45,12 +45,18 @@
 // Global variables
 extern SU3 u[NLINK];
 
+extern double t0_tot;
+extern double t1_tot;
+extern double t2_tot;
 // Function declarations (general)
 void u_init(void);
 double u_plaq(void);
 double u_sweep_metro(void);
 void u_metro_offer(SU3*, SU3*);
 int u_metro_accept(SU3*, SU3*, SU3*);
+double stop_watch(double t0);
+
+
 
 // Function declarations (specialized)
 void u_zero(SU3*);

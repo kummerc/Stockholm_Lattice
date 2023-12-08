@@ -40,6 +40,7 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <complex.h>
+#include <sys/time.h>
 
 // Simulation parameters
 #define LS		8			//!< Lattice size in spatial direction
@@ -48,7 +49,7 @@
 #define BETA		6.0			//!< Gauge coupling constant
 #define UINIT		cold			//!< hot or cold start
 #define METRO_NSWEEP	50			//!< Number of Metropolis updates
-#define METRO_NHIT	50			//!< Number of Metropolis hits
+#define METRO_NHIT	200			//!< Number of Metropolis hits
 #define METRO_BIAS	3.0			//!< Bias used in Metropolis update
 
 #define SEED		23984			//!< Random number generator seed

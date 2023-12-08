@@ -37,10 +37,15 @@
 #include "rng.h"
 #include "u.h"
 
+
 //--------------------------------------------------------------------------------------------------
 //! Main routine
 //--------------------------------------------------------------------------------------------------
 
+
+double t0_tot=0;
+double t1_tot=0;
+double t2_tot=0;
 int main()
 {
   int i;
@@ -64,6 +69,7 @@ int main()
     printf("%6d     %.6e     %.2e\n", i, acc, u_plaq());
     fflush(stdout);
   }
+  printf("t0_tot=%lf, t1_tot=%lf, t2_tot=%lf\n", t0_tot, t1_tot, t2_tot);
 
   return 0;
 }

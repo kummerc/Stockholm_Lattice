@@ -50,6 +50,14 @@ SU3 u[NLINK];
 //! Initialize gauge fields
 //--------------------------------------------------------------------------------------------------
 
+double
+stop_watch(double t0)
+{
+  struct timeval t;
+  gettimeofday(&t, NULL);
+  return (double)t.tv_sec + (double)t.tv_usec/1e6 - t0;
+}
+
 void u_init(void)
 {
   int i;
@@ -150,7 +158,7 @@ double u_sweep_metro(void)
   SU3 staple;
   int iacc;
   double acc;
-
+  double t2;
   iacc = 0;
 
   for (t = 0; t < LT; t++)
@@ -158,7 +166,9 @@ double u_sweep_metro(void)
       for (y = 0; y < LS; y++)
         for (x = 0; x < LS; x++)
         {
-          s = site(x, y, z, t);
+	  
+	  t2=stop_watch(0);
+	  s = site(x, y, z, t);
           for (mu = 0; mu < 4; mu++)
           {
             l = link(s, mu);
@@ -199,6 +209,8 @@ double u_sweep_metro(void)
               }
 
             // Perform multiple hits
+            double t1;
+            t1=stop_watch(0);
             for (ihit = 0; ihit < METRO_NHIT; ihit++)
             {
               SU3 unew;
@@ -211,9 +223,13 @@ double u_sweep_metro(void)
                 iacc++;
               }
             }
+            t1=stop_watch(t1);
+            t1_tot += t1;
           }
-        }
-
+	  t2=stop_watch(t2);
+	  t2_tot+=t2;
+	}
+  
   acc = iacc / (double) (METRO_NHIT * NLINK);
 
   return acc;
@@ -264,6 +280,8 @@ int u_metro_accept(SU3* staple, SU3* uold, SU3* unew)
   // Compute change of action when using new link value
   aold = 0.0;
   anew = 0.0;
+  double t0;
+  t0 = stop_watch(0);
   for (k = 0; k < NCOL; k++)
     for (l = 0; l < NCOL; l++)
     {
@@ -271,7 +289,8 @@ int u_metro_accept(SU3* staple, SU3* uold, SU3* unew)
       anew += creal(unew->c[k][l] * staple->c[l][k]);
     }
   adiff = -0.3333333 * (aold - anew);
-
+  t0=stop_watch(t0);
+  t0_tot += t0;
   // Metropolis step
   if (log(rng()) > BETA * adiff)
     accept = 0;
