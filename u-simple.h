@@ -36,6 +36,6 @@
 #define USIMPLE_H
 
 // Type definition
-struct SU3 { std::complex<double> c[NCOL][NCOL]; } SU3;
+struct SU3 { std::complex<double> c[NCOL][NCOL]; };
 
 #endif
