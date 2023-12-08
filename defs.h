@@ -35,11 +35,11 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <assert.h>
-#include <complex.h>
+#include <iostream>
+#include <cstdlib>
+#include <cstdarg>
+#include <cassert>
+#include <complex>
 
 // Simulation parameters
 #define LS		8			//!< Lattice size in spatial direction
