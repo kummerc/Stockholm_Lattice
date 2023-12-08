@@ -37,6 +37,7 @@
 #include "geom.h"
 #include "u.h"
 #include <time.h>
+#include <CL/sycl.hpp>
 
 // Include specialized functions
 #if defined(U_SIMPLE)
@@ -79,45 +80,58 @@ void u_init(void)
 double u_plaq(void)
 {
   int i, j;
-  int x, y, z, t;
-  int mu, nu;
-  int s, l;
   double plaq;
 
   plaq = 0.0;
 
-  for (t = 0; t < LT; t++)
-    for (z = 0; z < LS; z++)
-      for (y = 0; y < LS; y++)
-        for (x = 0; x < LS; x++)
-        {
-          s = site(x, y, z, t);
-          for (mu = 0; mu < 4; mu++)
-          {
-            SU3* up[4];
+  // Create a SYCL queue to specify the device (e.g., GPU)
+  sycl::queue queue(sycl::gpu_selector{});
 
-            up[0] = &u[link(s, mu)];
+  // Submit a command group to the queue
+  queue.submit([&](sycl::handler& cgh) {
+  // Define the data on the device
+  sycl::accessor<double, 0, sycl::access::mode::write, sycl::access::target::local> plaqAcc(sycl::range<1>(1), cgh);
+  
+  // Execute the parallel_for algorithm on the GPU
+      cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), [=](sycl::id<1> idx) {
+          int t = idx / (LS * LS * LS);
+          int z = (idx / (LS * LS)) % LS;
+          int y = (idx / LS) % LS;
+          int x = idx % LS;
 
-            for (nu = mu+1; nu < 4; nu++)
-            {
-              SU3 t0, t1;
+          int s = site(x, y, z, t);
 
-              up[1] = &u[link(nnp[s][mu], nu)];
-              up[2] = &u[link(nnp[s][nu], mu)];
-              up[3] = &u[link(s, nu)];
+          for (int mu = 0; mu < 4; mu++) {
+              SU3* up[4];
 
-              u_mul(&t0, up[0], up[1]);
-              u_mul(&t1, up[3], up[2]);
-              u_dagger(&t1);
+              up[0] = &u[link(s, mu)];
 
-              // Trace of product of t0 and t2
-              for (i = 0; i < NCOL; i++)
-                for (j = 0; j < NCOL; j++)
-                  plaq += creal(t0.c[i][j] * t1.c[j][i]);
-            }
+              for (int nu = mu + 1; nu < 4; nu++) {
+                  SU3 t0, t1;
+
+                  up[1] = &u[link(nnp[s][mu], nu)];
+                  up[2] = &u[link(nnp[s][nu], mu)];
+                  up[3] = &u[link(s, nu)];
+
+                  u_mul(&t0, up[0], up[1]);
+                  u_mul(&t1, up[3], up[2]);
+                  u_dagger(&t1);
+
+                  double localPlaq = 0.0;
+                  for (int i = 0; i < NCOL; i++)
+                      for (int j = 0; j < NCOL; j++)
+                          localPlaq += creal(t0.c[i][j] * t1.c[j][i]);
+
+                  plaqAcc[0] += localPlaq;
+              }
           }
-        }
+      });
+  });
 
+  // Read the result back to the host
+  plaq += queue.get_access<sycl::access::mode::read, sycl::access::target::local>(plaqAcc)[0];
+
+  // Normalize by the number of lattice sites and the number of directions
   plaq /= 18. * V;
 
   return plaq;
