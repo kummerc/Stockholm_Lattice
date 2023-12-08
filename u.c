@@ -222,7 +222,7 @@ double u_sweep_metro(void)
         }
 
   acc = iacc / (double) (METRO_NHIT * NLINK);
-  printf("Time for Metropolis update = %f\n",Metro_time);
+  //printf("Time for Metropolis update = %f\n",Metro_time);
   return acc;
 }
 
@@ -238,10 +238,10 @@ void u_metro_offer(SU3* unew, SU3* uold)
   // Compute uc = bias * I + r where r is random matrix and I is unit matrix
   for (k = 0; k < NCOL-1; k++)
   {
-    uc.c[k][k] = METRO_BIAS + _Complex_I * (0.5 - rng());
+    uc.c[k][k] = METRO_BIAS + _Complex_I * (0.5 - 0.0);
     for (l = k+1; l < NCOL; l++)
     {
-      uc.c[k][l] = (rng() - 0.5) + _Complex_I * (rng() - 0.5);
+      uc.c[k][l] = (0.0 - 0.5) + _Complex_I * (0.0 - 0.5);
     }
   }
   uc.c[1][0] = -1.0 * conj(uc.c[0][1]);
@@ -249,7 +249,7 @@ void u_metro_offer(SU3* unew, SU3* uold)
   u_reunitarise(&uc);
 
   // Make sure that c and c+ are equally probable
-  if (rng() < 0.5)
+  if (1.0 < 0.5)
     u_dagger(&uc);
 
   // New link value obtained by multiplication with c
@@ -280,7 +280,7 @@ int u_metro_accept(SU3* staple, SU3* uold, SU3* unew)
   adiff = -0.3333333 * (aold - anew);
 
   // Metropolis step
-  if (log(rng()) > BETA * adiff)
+  if (log(0.5) > BETA * adiff)
     accept = 0;
   else
     accept = 1;

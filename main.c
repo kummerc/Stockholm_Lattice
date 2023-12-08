@@ -71,12 +71,12 @@ int main()
     start_metro = clock();
     acc = u_sweep_metro();
     end_metro = clock();
-    printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
+    //printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
 
     start_plaq = clock();
     printf("%6d     %.6e     %.2e\n", i, acc, u_plaq());
     end_plaq = clock();
-    printf("Time u_sweep_metro(): %f s\n", ((double) (end_plaq - start_plaq)) / CLOCKS_PER_SEC);
+    //printf("Time u_sweep_metro(): %f s\n", ((double) (end_plaq - start_plaq)) / CLOCKS_PER_SEC);
     fflush(stdout);
   }
   end = clock();
