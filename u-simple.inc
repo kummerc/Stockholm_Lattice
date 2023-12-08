@@ -80,7 +80,7 @@ void u_rng(SU3* u)
     {
       phi = 2. * M_PI * rng();
       rho = sqrt(-1.0 * log(rng()));
-      u->c[k][l] = rho * (cos(phi) + _Complex_I * sin(phi));
+      u->c[k][l] = rho * (cos(phi) + std::complex<double>(0.0, sin(phi)));
     }
 
   u_reunitarise(u);
@@ -151,7 +151,7 @@ void u_mul(SU3* o, SU3* i1, SU3* i2)
 void u_dagger(SU3* u)
 {
   int k, l;
-  double complex t0, t1, t2;
+  std::complex<double> t0, t1, t2;
 
   t0 = conj(u->c[0][1]);
   t1 = conj(u->c[0][2]);
@@ -180,7 +180,7 @@ void u_norm_row(SU3* u, int row)
   sum = 0.0;
   for (col = 0; col < NCOL; col++)
   {
-    double complex z = u->c[row][col];
+    std::complex<double> z = u->c[row][col];
     sum += creal(z) * creal(z) + cimag(z) * cimag(z);
   }
 
@@ -199,7 +199,7 @@ void u_norm_row(SU3* u, int row)
 void u_orthog_rows(SU3* u, int row1, int row2)
 {
   int col;
-  double complex p1, p2, f;
+  std::complex<double> p1, p2, f;
 
   p1 = 0.0;
   p2 = 0.0;
@@ -222,7 +222,7 @@ void u_orthog_rows(SU3* u, int row1, int row2)
 void u_cross_rows(SU3* u, int row1, int row2, int row3)
 {
   int col;
-  double complex t[3];
+  std::complex<double> t[3];
 
   t[0] = u->c[row1][1] * u->c[row2][2] - u->c[row2][1] * u->c[row1][2];
   t[1] = u->c[row2][0] * u->c[row1][2] - u->c[row1][0] * u->c[row2][2];
@@ -248,7 +248,7 @@ void u_reunitarise(SU3* u)
 //! Compute determinant
 //--------------------------------------------------------------------------------------------------
 
-complex double u_det(SU3* u)
+std::complex<double> u_det(SU3* u)
 {
   return (u->c[0][0] * u->c[1][1] * u->c[2][2] +
           u->c[0][1] * u->c[1][2] * u->c[2][0] +

@@ -249,10 +249,10 @@ void u_metro_offer(SU3* unew, SU3* uold)
   // Compute uc = bias * I + r where r is random matrix and I is unit matrix
   for (k = 0; k < NCOL-1; k++)
   {
-    uc.c[k][k] = METRO_BIAS + _Complex_I * (0.5 - rng());
+    uc.c[k][k] = METRO_BIAS + std::complex<double>(0.0, rng() - 0.5);
     for (l = k+1; l < NCOL; l++)
     {
-      uc.c[k][l] = (rng() - 0.5) + _Complex_I * (rng() - 0.5);
+      uc.c[k][l] = (rng() - 0.5) + std::complex<double>(0.0, rng() - 0.5);
     }
   }
   uc.c[1][0] = -1.0 * conj(uc.c[0][1]);

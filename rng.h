@@ -44,14 +44,14 @@ inline static double rng(void)
   return drand48();
 }
 
-inline static double complex crng(void)
+inline static double std::complex<double> crng(void)
 {
   double i, r;
 
   r = drand48();
   i = drand48();
 
-  return (r + i * _Complex_I);
+  return std::complex<double>(r, i);
 }
 
 #endif
