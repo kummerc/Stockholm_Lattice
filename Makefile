@@ -33,8 +33,8 @@
 #---------------------------------------------------------------------------------------------------
 
 TARGET   = uedu
-SRC      = main.c common.c geom.c rng.c u.c
-CC       = gcc
+SRC      = main.cpp common.cpp geom.cpp rng.cpp u.cpp
+CC       = acpp
 CFLAGS   = -O3 -DU_SIMPLE
 
 .PHONY: clean veryclean dep
