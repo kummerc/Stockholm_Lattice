@@ -86,7 +86,7 @@ double u_plaq(void) {
   // Create a SYCL queue to specify the device (e.g., GPU)
   sycl::queue queue(sycl::gpu_selector{});
 
-  double *ud = sycl::malloc_device<double>(4 * VOL, queue);
+  SU3 *ud = sycl::malloc_device<SU3>(4 * VOL, queue);
   queue.copy<SU3>(u.data(), ud, 4 * VOL);
 
   // Submit a command group to the queue
