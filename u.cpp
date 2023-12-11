@@ -39,8 +39,6 @@
 #include <time.h>
 #include <sycl/sycl.hpp>
 
-namespace sycl = cl::sycl;
-
 // Include specialized functions
 #if defined(U_SIMPLE)
 #include "u-simple.inc"
@@ -89,7 +87,7 @@ double u_plaq(void) {
   sycl::queue queue(sycl::gpu_selector{});
 
   double *ud = sycl::malloc_device<double>(4 * VOL, queue);
-  queue.copy<double>(u, ud, 4 * VOL);
+  queue.copy<double>(u.data(), ud, 4 * VOL);
 
   // Submit a command group to the queue
   queue.submit([&](sycl::handler& cgh) {
