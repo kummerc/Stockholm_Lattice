@@ -83,14 +83,17 @@ double u_plaq(void)
 
   plaq = 0.0;
 
+  // Create a buffer to store the result
+  sycl::buffer<double, 1> plaqBuffer(sycl::range<1>(1));
+
   // Create a SYCL queue to specify the device (e.g., GPU)
   sycl::queue queue(sycl::gpu_selector{});
 
   // Submit a command group to the queue
   queue.submit([&](sycl::handler& cgh) {
-  // Define the data on the device
-  sycl::accessor<double, 1, sycl::access::mode::write, sycl::access::target::local> plaqAcc(sycl::range<1>(1), cgh);
-  
+    // Get an accessor for the buffer
+    auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
+
   // Execute the parallel_for algorithm on the GPU
       cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), [=](sycl::id<1> idx) {
           int t = idx / (LS * LS * LS);
@@ -119,16 +122,15 @@ double u_plaq(void)
                   double localPlaq = 0.0;
                   for (int i = 0; i < NCOL; i++)
                       for (int j = 0; j < NCOL; j++)
-                          localPlaq += real(t0.c[i][j] * t1.c[j][i]);
-
-                  plaqAcc[0] += localPlaq;
+                          plaqAcc[0] += real(t0.c[i][j] * t1.c[j][i]);
               }
           }
       });
   });
 
   // Read the result back to the host
-  plaq += queue.get_access<sycl::access::mode::read, sycl::access::target::local>(plaqAcc)[0];
+  auto plaqHostAcc = plaqBuffer.get_access<sycl::access::mode::read>();
+  double plaq = plaqHostAcc[0];
 
   // Normalize by the number of lattice sites and the number of directions
   plaq /= 18. * VOL;
