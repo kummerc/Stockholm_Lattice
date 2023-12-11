@@ -119,7 +119,7 @@ double u_plaq(void)
                   double localPlaq = 0.0;
                   for (int i = 0; i < NCOL; i++)
                       for (int j = 0; j < NCOL; j++)
-                          localPlaq += creal(t0.c[i][j] * t1.c[j][i]);
+                          localPlaq += real(t0.c[i][j] * t1.c[j][i]);
 
                   plaqAcc[0] += localPlaq;
               }
