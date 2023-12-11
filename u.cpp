@@ -39,6 +39,8 @@
 #include <time.h>
 #include <sycl/sycl.hpp>
 
+namespace sycl = cl::sycl;
+
 // Include specialized functions
 #if defined(U_SIMPLE)
 #include "u-simple.inc"
@@ -77,11 +79,8 @@ void u_init(void)
 //! \f$\sum_p W_p = \sum_x \sum_\mu \sum_{\nu > \mu} U_{x,\mu} U_{x+\hat{\nu},\nu} U^\dagger_{x+\hat{\nu},\mu} U^\dagger_{x,\nu}\f$
 //--------------------------------------------------------------------------------------------------
 
-double u_plaq(void)
-{
+double u_plaq(void) {
   double plaq;
-
-  plaq = 0.0;
 
   // Create a buffer to store the result
   sycl::buffer<double, 1> plaqBuffer(sycl::range<1>(1));
@@ -89,54 +88,63 @@ double u_plaq(void)
   // Create a SYCL queue to specify the device (e.g., GPU)
   sycl::queue queue(sycl::gpu_selector{});
 
+  double *ud = sycl::malloc_device<double>(4 * VOL, queue);
+  queue.copy<double>(u, ud, 4 * VOL);
+
   // Submit a command group to the queue
   queue.submit([&](sycl::handler& cgh) {
-    // Get an accessor for the buffer
-    auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
+      // Get an accessor for the buffer
+      auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
 
-  // Execute the parallel_for algorithm on the GPU
-      cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), [=](sycl::id<1> idx) {
+      // Execute the parallel_for algorithm on the GPU
+      cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), [=](sycl::id<1> idx, auto& plaqLoc) {
           int t = idx / (LS * LS * LS);
           int z = (idx / (LS * LS)) % LS;
           int y = (idx / LS) % LS;
           int x = idx % LS;
 
           int s = site(x, y, z, t);
+          double plaqd = 0.0;
 
           for (int mu = 0; mu < 4; mu++) {
               SU3* up[4];
 
-              up[0] = &u[link(s, mu)];
+              up[0] = ud[link(s, mu)];
 
               for (int nu = mu + 1; nu < 4; nu++) {
-                  SU3 t0, t1;
+                SU3 t0, t1;
 
-                  up[1] = &u[link(nnp[s][mu], nu)];
-                  up[2] = &u[link(nnp[s][nu], mu)];
-                  up[3] = &u[link(s, nu)];
+                up[1] = ud[link(nnp[s][mu], nu)];
+                up[2] = ud[link(nnp[s][nu], mu)];
+                up[3] = ud[link(s, nu)];
 
-                  u_mul(&t0, up[0], up[1]);
-                  u_mul(&t1, up[3], up[2]);
-                  u_dagger(&t1);
+                u_mul(&t0, up[0], up[1]);
+                u_mul(&t1, up[3], up[2]);
+                u_dagger(&t1);
 
-                  double localPlaq = 0.0;
-                  for (int i = 0; i < NCOL; i++)
-                      for (int j = 0; j < NCOL; j++)
-                          plaqAcc[0] += real(t0.c[i][j] * t1.c[j][i]);
+                double localPlaq = 0.0;
+                for (int i = 0; i < NCOL; i++)
+                    for (int j = 0; j < NCOL; j++)
+                        localPlaq += real(t0.c[i][j] * t1.c[j][i]);
+                plaqd += localPlaq;
               }
           }
+
+          // Use the reduction extension to sum up the results across all threads
+          plaqLoc.combine(plaqd);
       });
   });
 
-  // Read the result back to the host
+  // Read the reduced result back to the host
   auto plaqHostAcc = plaqBuffer.get_access<sycl::access::mode::read>();
-  double plaq = plaqHostAcc[0];
+  plaq = plaqHostAcc[0];
 
   // Normalize by the number of lattice sites and the number of directions
   plaq /= 18. * VOL;
 
   return plaq;
 }
+
 
 //--------------------------------------------------------------------------------------------------
 //! Metropolis update: Update full lattice
