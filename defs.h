@@ -76,9 +76,9 @@ static enum {
 } uinit;
 
 // Function declarations
-void die_(const char *, int, const char *, ...);
+void die__(const char *, int, const char *, ...);
 
 // Error handling
-#define die(ARGS...) die_(__FILE__, __LINE__, ##ARGS)
+#define die_(ARGS...) die__(__FILE__, __LINE__, ##ARGS)
 
 #endif

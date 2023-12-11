@@ -38,7 +38,7 @@
 //! Exit routine
 //--------------------------------------------------------------------------------------------------
 
-void die_(const char *fname, int lineno, const char *fmt, ...)
+void die__(const char *fname, int lineno, const char *fmt, ...)
 {
   fprintf(stderr, "ERROR(%s,%d): ", fname, lineno);
 

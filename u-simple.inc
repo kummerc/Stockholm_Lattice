@@ -87,8 +87,8 @@ void u_rng(SU3* u)
 
 #if 0	// Testing
   double complex det = u_det(u);
-  printf("u00 = (%e,%e)\n", creal(u->c[0][0]), cimag(u->c[0][0]));
-  printf("det = (%e,%e)\n", creal(det), cimag(det));
+  printf("u00 = (%e,%e)\n", real(u->c[0][0]), imag(u->c[0][0]));
+  printf("det = (%e,%e)\n", real(det), imag(det));
   SU3 ud, uud;
   u_copy(&ud, u);
   u_dagger(&ud);
@@ -97,7 +97,7 @@ void u_rng(SU3* u)
     for (l = 0; l < NCOL; l++)
       if ((k == l && cabs(uud.c[k][l]-1.) > 1.e-6) ||
           (k != l && cabs(uud.c[k][l]) > 1.e-6))
-        die("%d %d %e %e\n", k, l, creal(uud.c[k][l]), cimag(uud.c[k][l]));
+        die_("%d %d %e %e\n", k, l, real(uud.c[k][l]), imag(uud.c[k][l]));
 #endif
 }
 
@@ -181,11 +181,11 @@ void u_norm_row(SU3* u, int row)
   for (col = 0; col < NCOL; col++)
   {
     std::complex<double> z = u->c[row][col];
-    sum += creal(z) * creal(z) + cimag(z) * cimag(z);
+    sum += real(z) * real(z) + imag(z) * imag(z);
   }
 
   if ( sum <= 1.e-8)
-    die("Normalization failed (sum=%e)\n", sum);
+    die_("Normalization failed (sum=%e)\n", sum);
 
   sum = 1. / sqrt(sum);
   for (col = 0; col < NCOL; col++)
@@ -209,7 +209,7 @@ void u_orthog_rows(SU3* u, int row1, int row2)
     p2 += conj(u->c[row1][col]) * u->c[row1][col];
   }
 
-  f = p1 * (1.0 / creal(p2));
+  f = p1 * (1.0 / real(p2));
 
   for (col = 0; col < NCOL; col++)
     u->c[row2][col] -= f * u->c[row1][col];

@@ -67,7 +67,7 @@ void u_init(void)
         u_one(&u[i]);
         break;
       default:
-        die("Unknown initialisation (UINIT=%d)\n", UINIT);
+        die_("Unknown initialisation (UINIT=%d)\n", UINIT);
     }
   }
 }
