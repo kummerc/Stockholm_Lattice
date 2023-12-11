@@ -84,12 +84,12 @@ double u_plaq(void)
   plaq = 0.0;
 
   // Create a SYCL queue to specify the device (e.g., GPU)
-  sycl::queue queue(sycl::gpu_selector{});
+  sycl::queue queue(sycl::gpu_selector_v{});
 
   // Submit a command group to the queue
   queue.submit([&](sycl::handler& cgh) {
   // Define the data on the device
-  sycl::accessor<double, 0, sycl::access::mode::write, sycl::access::target::local> plaqAcc(sycl::range<1>(1), cgh);
+  sycl::accessor<double, 1, sycl::access::mode::write, sycl::access::target::local_accessor> plaqAcc(sycl::range<1>(1), cgh);
   
   // Execute the parallel_for algorithm on the GPU
       cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), [=](sycl::id<1> idx) {
@@ -285,8 +285,8 @@ int u_metro_accept(SU3* staple, SU3* uold, SU3* unew)
   for (k = 0; k < NCOL; k++)
     for (l = 0; l < NCOL; l++)
     {
-      aold += creal(uold->c[k][l] * staple->c[l][k]);
-      anew += creal(unew->c[k][l] * staple->c[l][k]);
+      aold += real(uold->c[k][l] * staple->c[l][k]);
+      anew += real(unew->c[k][l] * staple->c[l][k]);
     }
   adiff = -0.3333333 * (aold - anew);
 
