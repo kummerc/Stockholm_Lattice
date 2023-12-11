@@ -84,12 +84,12 @@ double u_plaq(void)
   plaq = 0.0;
 
   // Create a SYCL queue to specify the device (e.g., GPU)
-  sycl::queue queue(sycl::gpu_selector_v{});
+  sycl::queue queue(sycl::gpu_selector{});
 
   // Submit a command group to the queue
   queue.submit([&](sycl::handler& cgh) {
   // Define the data on the device
-  sycl::accessor<double, 1, sycl::access::mode::write, sycl::access::target::local_accessor> plaqAcc(sycl::range<1>(1), cgh);
+  sycl::accessor<double, 1, sycl::access::mode::write, sycl::access::target::local> plaqAcc(sycl::range<1>(1), cgh);
   
   // Execute the parallel_for algorithm on the GPU
       cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), [=](sycl::id<1> idx) {
