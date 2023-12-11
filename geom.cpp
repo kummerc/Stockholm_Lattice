@@ -35,8 +35,8 @@
 #include "defs.h"
 #include "geom.h"
 
-int nnp[V][4];
-int nnm[V][4];
+int nnp[VOL][4];
+int nnm[VOL][4];
 
 //--------------------------------------------------------------------------------------------------
 //! Define size index (x is fastest, t is slowest running index)
@@ -65,7 +65,7 @@ int site(int x, int y, int z, int t)
 
 int link(int site, int mu)
 {
-  assert((0 <= site) && (site < V));
+  assert((0 <= site) && (site < VOL));
   assert((0 <= mu) && (mu < 4));
 
   return (4*site + mu);

@@ -36,8 +36,8 @@
 #define GEOM_H
 
 // Global variables
-extern int nnp[V][4];			//!< Nearest-neighbour in positive direction
-extern int nnm[V][4];			//!< Nearest-neighbour in negative direction
+extern int nnp[VOL][4];			//!< Nearest-neighbour in positive direction
+extern int nnm[VOL][4];			//!< Nearest-neighbour in negative direction
 
 // Function declarations
 void geom_init(void);

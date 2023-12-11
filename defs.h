@@ -56,8 +56,8 @@
 //--------------------------------------- NO CHANGES BELOW ---------------------------------------//
 
 // Derived simulation parameters
-#define V		((LS)*(LS)*(LS)*(LT))	//!< Volume
-#define NLINK		((V)*4)			//!< Number of links
+#define VOL		((LS)*(LS)*(LS)*(LT))	//!< Volume
+#define NLINK		((VOL)*4)			//!< Number of links
 
 // Other constants
 #define NCOL		3			//!< Number of colours (do not change)

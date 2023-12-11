@@ -131,7 +131,7 @@ double u_plaq(void)
   plaq += queue.get_access<sycl::access::mode::read, sycl::access::target::local>(plaqAcc)[0];
 
   // Normalize by the number of lattice sites and the number of directions
-  plaq /= 18. * V;
+  plaq /= 18. * VOL;
 
   return plaq;
 }

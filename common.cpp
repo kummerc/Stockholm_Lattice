@@ -48,4 +48,5 @@ void die_(const char *fname, int lineno, const char *fmt, ...)
   va_end(args);
 
   exit(1);
+  return;
 }
