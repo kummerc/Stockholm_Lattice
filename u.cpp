@@ -107,14 +107,14 @@ double u_plaq(void) {
           for (int mu = 0; mu < 4; mu++) {
               SU3* up[4];
 
-              up[0] = ud[link(s, mu)];
+              up[0] = &ud[link(s, mu)];
 
               for (int nu = mu + 1; nu < 4; nu++) {
                 SU3 t0, t1;
 
-                up[1] = ud[link(nnp[s][mu], nu)];
-                up[2] = ud[link(nnp[s][nu], mu)];
-                up[3] = ud[link(s, nu)];
+                up[1] = &ud[link(nnp[s][mu], nu)];
+                up[2] = &ud[link(nnp[s][nu], mu)];
+                up[3] = &ud[link(s, nu)];
 
                 u_mul(&t0, up[0], up[1]);
                 u_mul(&t1, up[3], up[2]);
