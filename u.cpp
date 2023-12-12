@@ -109,10 +109,10 @@ void u_plaq(void) {
   int i_METRO;
   double acc;
   for (i_METRO=0; i_METRO<METRO_NSWEEP; i_METRO++){
-    start_metro = clock();
-    acc = u_sweep_metro(); 
-    end_metro = clock();
-    printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
+    //start_metro = clock();
+    //acc = u_sweep_metro(); 
+    //end_metro = clock();
+    //printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
     queue.submit([&](sycl::handler& cgh) {
     // Get an accessor for the buffer
     auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
