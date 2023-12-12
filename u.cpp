@@ -104,11 +104,11 @@ double u_plaq(void) {
   //queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
 
   // Submit a command group to the queue
-  int i;
+  int i_METRO;
   double acc;
-  for (i=0; i<METRO_NSWEEP; i++){
+  for (i_METRO=0; i_METRO<METRO_NSWEEP; i_METRO++){
     start_metro = clock();
-    acc = u_sweep_metro();
+    acc = u_sweep_metro(); 
      end_metro = clock();
     printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
   queue.submit([&](sycl::handler& cgh) {
@@ -159,7 +159,7 @@ double u_plaq(void) {
 
   // Normalize by the number of lattice sites and the number of directions
   plaq /= 18. * VOL;
-  printf("%6d     %.6e     %.2e\n", i, plaq, acc);
+  printf("%6d     %.6e     %.2e\n", i_METRO, plaq, acc);
   fflush(stdout);
   }
   return plaq;
