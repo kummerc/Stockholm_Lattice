@@ -78,7 +78,7 @@ void u_init(void)
 //! \f$\sum_p W_p = \sum_x \sum_\mu \sum_{\nu > \mu} U_{x,\mu} U_{x+\hat{\nu},\nu} U^\dagger_{x+\hat{\nu},\mu} U^\dagger_{x,\nu}\f$
 //--------------------------------------------------------------------------------------------------
 
-double u_plaq(void) {
+void u_plaq(void) {
   clock_t start_copy, end_copy, start_metro, end_metro;
   
   start_copy = clock();
@@ -96,9 +96,9 @@ double u_plaq(void) {
   printf("Time u_copy_plaq(): %f s\n", ((double) (end_copy - start_copy)) / CLOCKS_PER_SEC);
   printf("##################################################################################\n");
   fflush(stdout);
-  queue.copy<SU3>(u, ud, 4 * VOL);
+  //queue.copy<SU3>(u, ud, 4 * VOL);
   //int *nnph=nnp;
-  queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
+  //queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
     //  queue.copy<SU3>(u, ud, 4 * VOL);
   //int *nnph=nnp;
   //queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
@@ -111,6 +111,8 @@ double u_plaq(void) {
     acc = u_sweep_metro();
      end_metro = clock();
     printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
+    queue.copy<SU3>(u, ud, 4 * VOL);
+    queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
   queue.submit([&](sycl::handler& cgh) {
       // Get an accessor for the buffer
       auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
@@ -162,7 +164,7 @@ double u_plaq(void) {
   printf("%6d     %.6e     %.2e\n", i, plaq, acc);
   fflush(stdout);
   }
-  return plaq;
+  //return plaq;
 }
 
 
