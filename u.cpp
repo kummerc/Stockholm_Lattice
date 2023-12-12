@@ -353,17 +353,17 @@ double u_sweep_metro_gpu(SU3 *d_ud, int *d_nnpd, int *d_nnmd) {
 	  sycl::queue queue(sycl::gpu_selector{});
 
     // Allocate and copy data to the device
-    buffer<double, 1> accBuffer(&h_acc, range<1>(1));
-    buffer<SU3, 1> d_ud_buffer(d_ud, range<1>(NSITE * 4));
-    buffer<int, 1> d_nnpd_buffer(d_nnpd, range<1>(NSITE * 4));
-    buffer<int, 1> d_nnmd_buffer(d_nnmd, range<1>(NSITE * 4));
+	  sycl::uffer<double, 1> accBuffer(&h_acc, range<1>(1));
+	  sycl::buffer<SU3, 1> d_ud_buffer(d_ud, range<1>(NSITE * 4));
+	  sycl::buffer<int, 1> d_nnpd_buffer(d_nnpd, range<1>(NSITE * 4));
+	  syc::buffer<int, 1> d_nnmd_buffer(d_nnmd, range<1>(NSITE * 4));
 
     // Launch the kernel
-    queue.submit([&](handler &cgh) {
-      auto accAcc = accBuffer.get_access<access::mode::write>(cgh);
-      auto ud = d_ud_buffer.get_access<access::mode::read_write>(cgh);
-      auto nnpd = d_nnpd_buffer.get_access<access::mode::read>(cgh);
-      auto nnmd = d_nnmd_buffer.get_access<access::mode::read>(cgh);
+    queue.submit([&](sycl::handler &cgh) {
+      auto accAcc = accBuffer.get_access<sycl::access::mode::write>(cgh);
+      auto ud = d_ud_buffer.get_access<sycl::access::mode::read_write>(cgh);
+      auto nnpd = d_nnpd_buffer.get_access<sycl::access::mode::read>(cgh);
+      auto nnmd = d_nnmd_buffer.get_access<sycl::access::mode::read>(cgh);
 
       cgh.parallel_for<class MetroKernel>(range<1>(NSITE * 4), MetroFunctor(accAcc.get_pointer(), ud.get_pointer(), nnpd.get_pointer(), nnmd.get_pointer()));
     });
