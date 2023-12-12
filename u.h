@@ -47,7 +47,7 @@ extern SU3 u[NLINK];
 
 // Function declarations (general)
 void u_init(void);
-double u_plaq(void);
+void u_plaq(void);
 double u_sweep_metro(void);
 void u_metro_offer(SU3*, SU3*);
 int u_metro_accept(SU3*, SU3*, SU3*);
