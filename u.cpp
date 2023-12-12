@@ -180,7 +180,7 @@ void u_plaq(void) {
                 }
               }
       	    }
-            queue.wait();	    
+            //queue.wait();	    
             accd = iacc / (double) (METRO_NHIT * NLINK);
       	  }
         } 
