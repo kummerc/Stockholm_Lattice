@@ -47,7 +47,7 @@ int main()
   clock_t start, end, start_metro, end_metro, start_plaq, end_plaq;
   double time_taken;
 
-  int i;
+  //int i;
 
   // Initialisation routines
   geom_init();
@@ -57,15 +57,16 @@ int main()
   printf("# beta  = %f\n", BETA);
   printf("# uinit = %d\n", UINIT);
   printf("# nhit  = %d\n", METRO_NHIT);
+  printf("# LS    = %d\n", LS);
+  printf("# LT    = %d\n", LT);
   printf("#\n");
   printf("# update  plaquette  acceptance\n");
 
 
   start = clock();  
   // Update gauge fields and print plaquette
-  for (i = 0; i < 1; i++)
-  {
-    double acc;
+  //for (i = 0; i < 1; i++)
+    //double acc;
     //start_metro = clock();
     //acc = u_sweep_metro();
     //end_metro = clock();
@@ -77,8 +78,7 @@ int main()
     //printf("Time u_sweep_plaq(): %f s\n", ((double) (end_plaq - start_plaq)) / CLOCKS_PER_SEC);
     //printf("##################################################################################\n");
     //    fflush(stdout);
-    u_plaq();
-  }
+  u_plaq();
   end = clock();
   time_taken = ((double) (end - start)) / CLOCKS_PER_SEC;
   printf("Time main loop: %f s\n", time_taken);
