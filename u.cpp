@@ -79,6 +79,9 @@ void u_init(void)
 //--------------------------------------------------------------------------------------------------
 
 double u_plaq(void) {
+  clock_t start_copy, end_copy;
+  
+  start_copy = clock();
   double plaq;
 
   // Create a buffer to store the result
@@ -89,9 +92,16 @@ double u_plaq(void) {
 
   SU3 *ud = sycl::malloc_device<SU3>(4 * VOL, queue);
   int *nnpd = sycl::malloc_device<int>(4 * VOL, queue);
+  end_copy = clock();
+  printf("Time u_copy_plaq(): %f s\n", ((double) (end_copy - start_copy)) / CLOCKS_PER_SEC);
+  printf("##################################################################################\n");
+  fflush(stdout);
   queue.copy<SU3>(u, ud, 4 * VOL);
   //int *nnph=nnp;
   queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
+    //  queue.copy<SU3>(u, ud, 4 * VOL);
+  //int *nnph=nnp;
+  //queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
 
   // Submit a command group to the queue
   queue.submit([&](sycl::handler& cgh) {
@@ -136,14 +146,12 @@ double u_plaq(void) {
           plaqLoc.combine(plaqd);
       });
   });
-
   // Read the reduced result back to the host
   auto plaqHostAcc = plaqBuffer.get_access<sycl::access::mode::read>();
   plaq = plaqHostAcc[0];
 
   // Normalize by the number of lattice sites and the number of directions
   plaq /= 18. * VOL;
-
   return plaq;
 }
 
