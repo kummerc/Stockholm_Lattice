@@ -114,54 +114,135 @@ void u_plaq(void) {
     //end_metro = clock();
     //printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
     queue.submit([&](sycl::handler& cgh) {
-    // Get an accessor for the buffer
-    auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
+      // Get an accessor for the buffer
+      auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
 
-    // Execute the parallel_for algorithm on the GPU
-    cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), sycl::reduction(plaqAcc, 0.0, std::plus<double>{}),[=](sycl::id<1> idx, auto& plaqLoc) {
+      // Execute the parallel_for algorithm on the GPU
+      cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), sycl::reduction(plaqAcc, 0.0, std::plus<double>{}),[=](sycl::id<1> idx, auto& plaqLoc) {
+        int t = idx / (LS * LS * LS);
+        int z = (idx / (LS * LS)) % LS;
+        int y = (idx / LS) % LS;
+        int x = idx % LS;
+
+        int s = site(x, y, z, t);
+        double plaqd = 0.0;
+
+        for (int mu = 0; mu < 4; mu++) {
+          SU3* up[4];
+          up[0] = &ud[link(s, mu)];
+
+	  for (int nu = mu + 1; nu < 4; nu++) {
+            SU3 t0, t1;
+    	    up[1] = &ud[link(nnpd[4 * s + mu], nu)];
+	    up[2] = &ud[link(nnpd[4 * s + nu], mu)];
+            up[3] = &ud[link(s, nu)];
+
+            u_mul(&t0, up[0], up[1]);
+            u_mul(&t1, up[3], up[2]);
+            u_dagger(&t1);
+
+            double localPlaq = 0.0;
+            for (int i = 0; i < NCOL; i++)
+              for (int j = 0; j < NCOL; j++)
+                localPlaq += real(t0.c[i][j] * t1.c[j][i]);
+                  plaqd += localPlaq;
+          }
+        }
+
+        // Use the reduction extension to sum up the results across all threads
+        plaqLoc.combine(plaqd);
+      });
+    });
+    // Read the reduced result back to the host
+    auto plaqHostAcc = plaqBuffer.get_access<sycl::access::mode::read>();
+    plaq = plaqHostAcc[0];
+
+    // Normalize by the number of lattice sites and the number of directions
+    plaq /= 18. * VOL;
+
+  start_metro = clock();
+  //Parallelizing the Metropolis Algorithm
+  queue.submit([&](sycl::handler& cgh) {
+    auto accAcc = accBuffer.get_access<sycl::access::mode::write>(cgh);
+
+    cgh.parallel_for<class MetroKernel>(sycl::range<1>(LT * LS * LS * LS), sycl::reduction(accACC, 0.0, std::plus<double>{}),[=](sycl::id<1> idx, auto& accLoc) {
       int t = idx / (LS * LS * LS);
       int z = (idx / (LS * LS)) % LS;
       int y = (idx / LS) % LS;
       int x = idx % LS;
 
       int s = site(x, y, z, t);
-      double plaqd = 0.0;
+      double accd = 0.0;
+      
+      int im, jm;
+      int ihit;
+      int mu, nu;
+      int l;
+      SU3 staple;
+      int iacc = 0;
 
-      for (int mu = 0; mu < 4; mu++) {
-        SU3* up[4];
-        up[0] = &ud[link(s, mu)];
+      for(int rem=0; rem<8; rem++){ //Do not update adjacent links
+        for(mu=0; mu<4; mu++){
+	  l = link(s,mu);
+	  if(l % 8 == rem){
+	    // Compute staples
+            u_zero(&staple);
 
-	for (int nu = mu + 1; nu < 4; nu++) {
-          SU3 t0, t1;
-    	  up[1] = &ud[link(nnpd[4 * s + mu], nu)];
-	  up[2] = &ud[link(nnpd[4 * s + nu], mu)];
-          up[3] = &ud[link(s, nu)];
+            for (nu = 0; nu < 4; nu++)                  // Forward direction
+	      if (mu != nu)
+              {
+                SU3* up[3];
+                SU3 t0, t1;
 
-          u_mul(&t0, up[0], up[1]);
-          u_mul(&t1, up[3], up[2]);
-          u_dagger(&t1);
+                up[0] = &ud[link(nnpd[4*s + mu], nu)];
+                up[1] = &ud[link(nnpd[4*s + nu], mu)];
+                up[2] = &ud[link(s, nu)];
 
-          double localPlaq = 0.0;
-          for (int i = 0; i < NCOL; i++)
-            for (int j = 0; j < NCOL; j++)
-              localPlaq += real(t0.c[i][j] * t1.c[j][i]);
-                plaqd += localPlaq;
-        }
-      }
+                u_mul(&t0, up[2], up[1]);
+                u_dagger(&t0);
+                u_mul(&t1, up[0], &t0);
+                u_accum(&staple, &t1);
+              }
 
-      // Use the reduction extension to sum up the results across all threads
-      plaqLoc.combine(plaqd);
+	    for (nu = 0; nu < 4; nu++)                  // Backward direction
+              if (mu != nu)
+              {
+                SU3* um[3];
+                SU3 t0, t1;
+
+                um[0] = &ud[link(nnmd[4*nnpd[4*s + mu] + nu], nu)];
+                um[1] = &ud[link(nnmd[4*s + nu], mu)];
+                um[2] = &ud[link(nnmd[4*s + nu], nu)];
+
+                u_mul(&t0, um[1], um[0]);
+                u_dagger(&t0);
+                u_mul(&t1, &t0, um[2]);
+                u_accum(&staple, &t1);
+              }
+
+	    for (ihit = 0; ihit < METRO_NHIT; ihit++)
+            {
+              SU3 unew;
+
+              u_metro_offer(&unew, &ud[l]);
+
+              if (u_metro_accept(&staple, &ud[l], &unew))
+              {
+                u_copy(&ud[l], &unew);
+                iacc++;
+              }
+            }
+	  }      
+	  accd = iacc / (double) (METRO_NHIT * NLINK);
+	}
+      } 
+      accLoc.combine(accd);
     });
   });
-  // Read the reduced result back to the host
-  auto plaqHostAcc = plaqBuffer.get_access<sycl::access::mode::read>();
-  plaq = plaqHostAcc[0];
 
-  // Normalize by the number of lattice sites and the number of directions
-  plaq /= 18. * VOL;
+  auto accHostAcc = accBuffer.get_access<sycl::access::mode::read>();
+  acc = accHostAcc[0];
 
-  start_metro = clock();
-  acc = u_sweep_metro();
   end_metro = clock();
   printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
 
