@@ -61,7 +61,7 @@ int main()
   {
     double acc;
     acc = u_sweep_metro();
-    printf("%6d     %.6e     %.2e\n", i, acc, u_plaq());
+    printf("%6d     %.6e     %.2e\n", i, u_plaq(), acc);
     fflush(stdout);
   }
 
