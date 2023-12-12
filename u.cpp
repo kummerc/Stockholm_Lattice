@@ -92,6 +92,7 @@ double u_plaq(void) {
 
   SU3 *ud = sycl::malloc_device<SU3>(4 * VOL, queue);
   int *nnpd = sycl::malloc_device<int>(4 * VOL, queue);
+  int *nnmd = sycl::malloc_device<int>(4 * VOL, queue);
   end_copy = clock();
   printf("Time u_copy_plaq(): %f s\n", ((double) (end_copy - start_copy)) / CLOCKS_PER_SEC);
   printf("##################################################################################\n");
@@ -99,6 +100,7 @@ double u_plaq(void) {
   queue.copy<SU3>(u, ud, 4 * VOL);
   //int *nnph=nnp;
   queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
+  queue.copy<int>(&(nnm[0][0]), nnmd, 4 * VOL);
     //  queue.copy<SU3>(u, ud, 4 * VOL);
   //int *nnph=nnp;
   //queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
@@ -109,49 +111,47 @@ double u_plaq(void) {
   for (i_METRO=0; i_METRO<METRO_NSWEEP; i_METRO++){
     start_metro = clock();
     acc = u_sweep_metro(); 
-     end_metro = clock();
+    end_metro = clock();
     printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
-  queue.submit([&](sycl::handler& cgh) {
-      // Get an accessor for the buffer
-      auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
+    queue.submit([&](sycl::handler& cgh) {
+    // Get an accessor for the buffer
+    auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
 
-      // Execute the parallel_for algorithm on the GPU
-      cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), sycl::reduction(plaqAcc, 0.0, std::plus<double>{}),[=](sycl::id<1> idx, auto& plaqLoc) {
-          int t = idx / (LS * LS * LS);
-          int z = (idx / (LS * LS)) % LS;
-          int y = (idx / LS) % LS;
-          int x = idx % LS;
+    // Execute the parallel_for algorithm on the GPU
+    cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), sycl::reduction(plaqAcc, 0.0, std::plus<double>{}),[=](sycl::id<1> idx, auto& plaqLoc) {
+      int t = idx / (LS * LS * LS);
+      int z = (idx / (LS * LS)) % LS;
+      int y = (idx / LS) % LS;
+      int x = idx % LS;
 
-          int s = site(x, y, z, t);
-          double plaqd = 0.0;
+      int s = site(x, y, z, t);
+      double plaqd = 0.0;
 
-          for (int mu = 0; mu < 4; mu++) {
-              SU3* up[4];
+      for (int mu = 0; mu < 4; mu++) {
+        SU3* up[4];
+        up[0] = &ud[link(s, mu)];
 
-              up[0] = &ud[link(s, mu)];
+	for (int nu = mu + 1; nu < 4; nu++) {
+          SU3 t0, t1;
+    	  up[1] = &ud[link(nnpd[4 * s + mu], nu)];
+	  up[2] = &ud[link(nnpd[4 * s + nu], mu)];
+          up[3] = &ud[link(s, nu)];
 
-              for (int nu = mu + 1; nu < 4; nu++) {
-                SU3 t0, t1;
+          u_mul(&t0, up[0], up[1]);
+          u_mul(&t1, up[3], up[2]);
+          u_dagger(&t1);
 
-                up[1] = &ud[link(nnpd[4 * s + mu], nu)];
-                up[2] = &ud[link(nnpd[4 * s + nu], mu)];
-                up[3] = &ud[link(s, nu)];
-
-                u_mul(&t0, up[0], up[1]);
-                u_mul(&t1, up[3], up[2]);
-                u_dagger(&t1);
-
-                double localPlaq = 0.0;
-                for (int i = 0; i < NCOL; i++)
-                    for (int j = 0; j < NCOL; j++)
-                        localPlaq += real(t0.c[i][j] * t1.c[j][i]);
+          double localPlaq = 0.0;
+          for (int i = 0; i < NCOL; i++)
+            for (int j = 0; j < NCOL; j++)
+              localPlaq += real(t0.c[i][j] * t1.c[j][i]);
                 plaqd += localPlaq;
-              }
-          }
+        }
+      }
 
-          // Use the reduction extension to sum up the results across all threads
-          plaqLoc.combine(plaqd);
-      });
+      // Use the reduction extension to sum up the results across all threads
+      plaqLoc.combine(plaqd);
+    });
   });
   // Read the reduced result back to the host
   auto plaqHostAcc = plaqBuffer.get_access<sycl::access::mode::read>();
@@ -159,10 +159,16 @@ double u_plaq(void) {
 
   // Normalize by the number of lattice sites and the number of directions
   plaq /= 18. * VOL;
+
+  start_metro = clock();
+  acc = u_sweep_metro();
+  end_metro = clock();
+  printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
+
   printf("%6d     %.6e     %.2e\n", i_METRO, plaq, acc);
   fflush(stdout);
   }
-  return plaq;
+  //return plaq;
 }
 
 
