@@ -135,6 +135,7 @@ double u_plaq(void) {
           cgh.single_task<class ReductionTask>([=]() {
               // Reduce the local result using atomic addition
               sycl::atomic_ref<double>(plaqAcc[0]) += localAcc[0];
+          });
       });
   });
 
