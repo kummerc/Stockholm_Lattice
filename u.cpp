@@ -90,7 +90,7 @@ void u_plaq(void) {
   
   // Create a SYCL queue to specify the device (e.g., GPU)
   sycl::queue queue(sycl::gpu_selector{});
-  
+   
   SU3 *ud = sycl::malloc_device<SU3>(4 * VOL, queue);
   int *nnpd = sycl::malloc_device<int>(4 * VOL, queue);
   int *nnmd = sycl::malloc_device<int>(4 * VOL, queue);
@@ -107,7 +107,8 @@ void u_plaq(void) {
   double acc;
   for (i_METRO=0; i_METRO<METRO_NSWEEP; i_METRO++){
     start_metro = clock();
-    /*
+    
+    //Metropolis update starts
     queue.submit([&](sycl::handler& cgh) {
       auto accAcc = accBuffer.get_access<sycl::access::mode::write>(cgh);
       
@@ -188,8 +189,8 @@ void u_plaq(void) {
     
     auto accHostAcc = accBuffer.get_access<sycl::access::mode::read>();
     acc = accHostAcc[0];
-    */
-    acc = u_sweep_metro(); 
+     
+    //acc = u_sweep_metro(); 
     end_metro = clock();
     printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
     
