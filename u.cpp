@@ -88,7 +88,9 @@ double u_plaq(void) {
   sycl::queue queue(sycl::gpu_selector{});
 
   SU3 *ud = sycl::malloc_device<SU3>(4 * VOL, queue);
+  int *nnpd = sycl::malloc_device<int>(4 * VOL, queue);
   queue.copy<SU3>(u, ud, 4 * VOL);
+  queue.copy<int>(nnp, nnpd, 4 * VOL);
 
   // Submit a command group to the queue
   queue.submit([&](sycl::handler& cgh) {
@@ -113,8 +115,8 @@ double u_plaq(void) {
               for (int nu = mu + 1; nu < 4; nu++) {
                 SU3 t0, t1;
 
-                up[1] = &ud[link(nnp[s][mu], nu)];
-                up[2] = &ud[link(nnp[s][nu], mu)];
+                up[1] = &ud[link(nnpd[s][mu], nu)];
+                up[2] = &ud[link(nnpd[s][nu], mu)];
                 up[3] = &ud[link(s, nu)];
 
                 u_mul(&t0, up[0], up[1]);
