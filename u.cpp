@@ -109,10 +109,10 @@ void u_plaq(void) {
     start_metro = clock();
     
     //Metropolis update starts
-    queue.submit([&](sycl::handler& cgh) {
-      auto accAcc = accBuffer.get_access<sycl::access::mode::write>(cgh);
+    queue.submit([&](sycl::handler& cgm) {
+      auto accAcc = accBuffer.get_access<sycl::access::mode::write>(cgm);
       
-      cgh.parallel_for<class MetroKernel>(sycl::range<1>(LT * LS * LS * LS), sycl::reduction(accAcc, 0.0, std::plus<double>{}),[=](sycl::id<1> idx, auto& accLoc) {
+      cgm.parallel_for<class MetroKernel>(sycl::range<1>(LT * LS * LS * LS), sycl::reduction(accAcc, 0.0, std::plus<double>{}),[=](sycl::id<1> idx, auto& accLoc) {
         int t = idx / (LS * LS * LS);
         int z = (idx / (LS * LS)) % LS;
         int y = (idx / LS) % LS;
