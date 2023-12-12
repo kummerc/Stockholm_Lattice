@@ -239,6 +239,7 @@ void u_plaq(void) {
         plaqLoc.combine(plaqd);
       });
     });
+    queue.wait();
     // Read the reduced result back to the host
     auto plaqHostAcc = plaqBuffer.get_access<sycl::access::mode::read>();
     plaq = plaqHostAcc[0];
