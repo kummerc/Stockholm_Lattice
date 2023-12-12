@@ -75,6 +75,7 @@ int main()
     printf("%6d     %.6e     %.2e\n", i, u_plaq(), acc);
     end_plaq = clock();
     printf("Time u_sweep_plaq(): %f s\n", ((double) (end_plaq - start_plaq)) / CLOCKS_PER_SEC);
+    printf("##################################################################################\n");
     fflush(stdout);
   }
   end = clock();
