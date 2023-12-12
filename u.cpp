@@ -353,10 +353,10 @@ double u_sweep_metro_gpu(SU3 *d_ud, int *d_nnpd, int *d_nnmd) {
 	  sycl::queue queue(sycl::gpu_selector{});
 
     // Allocate and copy data to the device
-	  sycl::buffer<double, 1> accBuffer(&h_acc, range<1>(1));
-	  sycl::buffer<SU3, 1> d_ud_buffer(d_ud, range<1>(VOL * 4));
-	  sycl::buffer<int, 1> d_nnpd_buffer(d_nnpd, range<1>(VOL * 4));
-	  sycl::buffer<int, 1> d_nnmd_buffer(d_nnmd, range<1>(VOL * 4));
+	  sycl::buffer<double, 1> accBuffer(&h_acc, sycl::range<1>(1));
+	  sycl::buffer<SU3, 1> d_ud_buffer(d_ud, sycl::range<1>(VOL * 4));
+	  sycl::buffer<int, 1> d_nnpd_buffer(d_nnpd, sycl::range<1>(VOL * 4));
+	  sycl::buffer<int, 1> d_nnmd_buffer(d_nnmd, sycl::range<1>(VOL * 4));
 
     // Launch the kernel
     queue.submit([&](sycl::handler &cgh) {
