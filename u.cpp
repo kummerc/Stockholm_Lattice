@@ -115,8 +115,8 @@ double u_plaq(void) {
               for (int nu = mu + 1; nu < 4; nu++) {
                 SU3 t0, t1;
 
-                up[1] = &ud[link(nnpd[s][mu], nu)];
-                up[2] = &ud[link(nnpd[s][nu], mu)];
+                up[1] = &ud[link(nnpd[4 * s + mu], nu)];
+                up[2] = &ud[link(nnpd[4 * s + nu], mu)];
                 up[3] = &ud[link(s, nu)];
 
                 u_mul(&t0, up[0], up[1]);
