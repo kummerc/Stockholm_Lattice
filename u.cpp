@@ -185,14 +185,14 @@ void u_plaq(void) {
       	  }
         } 
         accLoc.combine(accd);
-	acc = accLoc;
+	//acc = accLoc;
       });
     });
     
-    //auto accHostAcc = accBuffer.get_access<sycl::access::mode::read>();
-    //acc = accHostAcc[0];
+    auto accHostAcc = accBuffer.get_access<sycl::access::mode::read>();
+    acc = accHostAcc[0];
  
-    queue.wait();
+    //queue.wait();
     //acc = u_sweep_metro(); 
     end_metro = clock();
     printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
@@ -216,21 +216,21 @@ void u_plaq(void) {
           SU3* up[4];
           up[0] = &ud[link(s, mu)];
             
-	  for (int nu = mu + 1; nu < 4; nu++) {
+          for (int nu = mu + 1; nu < 4; nu++) {
             SU3 t0, t1;
-    	    up[1] = &ud[link(nnpd[4 * s + mu], nu)];
-	    up[2] = &ud[link(nnpd[4 * s + nu], mu)];
+            up[1] = &ud[link(nnpd[4 * s + mu], nu)];
+            up[2] = &ud[link(nnpd[4 * s + nu], mu)];
             up[3] = &ud[link(s, nu)];
-             
+            
             u_mul(&t0, up[0], up[1]);
             u_mul(&t1, up[3], up[2]);
             u_dagger(&t1);
-             
+            
             double localPlaq = 0.0;
             for (int i = 0; i < NCOL; i++)
               for (int j = 0; j < NCOL; j++)
                 localPlaq += real(t0.c[i][j] * t1.c[j][i]);
-                  plaqd += localPlaq;
+            plaqd += localPlaq;
           }
         }
            
