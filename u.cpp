@@ -121,7 +121,7 @@ void u_plaq(void) {
         int s = site(x, y, z, t);
         double accd = 0.0;
          
-        int im, jm;
+        //int im, jm;
         int ihit;
         int mu, nu;
         int l;
@@ -134,7 +134,7 @@ void u_plaq(void) {
       	    if(l % 8 == rem){
       	      // Compute staples
               u_zero(&staple);
-              
+               
               for (nu = 0; nu < 4; nu++)                  // Forward direction
        	        if (mu != nu)
                 {
@@ -179,17 +179,19 @@ void u_plaq(void) {
                   iacc++;
                 }
               }
-      	    }      
-     	    accd = iacc / (double) (METRO_NHIT * NLINK);
+      	    }
+            queue.wait();	    
+            accd = iacc / (double) (METRO_NHIT * NLINK);
       	  }
         } 
         accLoc.combine(accd);
       });
     });
     
-    auto accHostAcc = accBuffer.get_access<sycl::access::mode::read>();
-    acc = accHostAcc[0];
-     
+    //auto accHostAcc = accBuffer.get_access<sycl::access::mode::read>();
+    //acc = accHostAcc[0];
+    acc = accLoc;
+    queue.wait();
     //acc = u_sweep_metro(); 
     end_metro = clock();
     printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
