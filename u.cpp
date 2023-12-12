@@ -285,6 +285,7 @@ public:
 
   void operator()(id<1> idx) const {
     int l = idx[0];
+    int nu;
 
     int s = l / 4;  // Assuming 4 links per site
     int mu = l % 4;
@@ -349,7 +350,7 @@ double u_sweep_metro_gpu(SU3 *d_ud, int *d_nnpd, int *d_nnmd) {
   double h_acc = 0.0;
 
   {
-    queue queue(gpu_selector{});
+	  sycl::queue queue(sycl::gpu_selector{});
 
     // Allocate and copy data to the device
     buffer<double, 1> accBuffer(&h_acc, range<1>(1));
