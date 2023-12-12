@@ -86,14 +86,14 @@ void u_plaq(void) {
   
   // Create a buffer to store the result
   sycl::buffer<double, 1> plaqBuffer(sycl::range<1>(1));
-  sycl::buffer<double, 1> accBuffer(sycl::range<1>(1));
+  //sycl::buffer<double, 1> accBuffer(sycl::range<1>(1));
   
   // Create a SYCL queue to specify the device (e.g., GPU)
   sycl::queue queue(sycl::gpu_selector{});
    
   SU3 *ud = sycl::malloc_device<SU3>(4 * VOL, queue);
   int *nnpd = sycl::malloc_device<int>(4 * VOL, queue);
-  int *nnmd = sycl::malloc_device<int>(4 * VOL, queue);
+  //int *nnmd = sycl::malloc_device<int>(4 * VOL, queue);
   end_copy = clock();
   printf("Time u_copy_plaq(): %f s\n", ((double) (end_copy - start_copy)) / CLOCKS_PER_SEC);
   printf("##################################################################################\n");
@@ -109,6 +109,7 @@ void u_plaq(void) {
     start_metro = clock();
     
     //Metropolis update starts
+    /*
     queue.submit([&](sycl::handler& cgm) {
       auto accAcc = accBuffer.get_access<sycl::access::mode::write>(cgm);
       
@@ -191,9 +192,10 @@ void u_plaq(void) {
     
     auto accHostAcc = accBuffer.get_access<sycl::access::mode::read>();
     acc = accHostAcc[0];
- 
+    */
     //queue.wait();
-    //acc = u_sweep_metro(); 
+    acc = u_sweep_metro();
+    //acc = u_sweep_metro_gpu(); 
     end_metro = clock();
     printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
     
@@ -276,9 +278,109 @@ void u_plaq(void) {
 //!                m1                -> mu
 //--------------------------------------------------------------------------------------------------
 
+class MetroFunctor {
+public:
+  MetroFunctor(double *acc, SU3 *ud, int *nnpd, int *nnmd)
+      : acc(acc), ud(ud), nnpd(nnpd), nnmd(nnmd) {}
+
+  void operator()(id<1> idx) const {
+    int l = idx[0];
+
+    int s = l / 4;  // Assuming 4 links per site
+    int mu = l % 4;
+
+    // Only update every 8th link
+    if (mu % 8 == 0) {
+      SU3 staple;
+      u_zero(&staple);
+
+      for (nu = 0; nu < 4; nu++)                  // Forward direction
+        if (mu != nu)
+         {
+           SU3* up[3];
+           SU3 t0, t1;
+
+           up[0] = &u[link(nnp[s][mu], nu)];
+           up[1] = &u[link(nnp[s][nu], mu)];
+           up[2] = &u[link(s, nu)];
+
+           u_mul(&t0, up[2], up[1]);
+           u_dagger(&t0);
+           u_mul(&t1, up[0], &t0);
+           u_accum(&staple, &t1);
+          }
+
+      for (nu = 0; nu < 4; nu++)                  // Backward direction
+        if (mu != nu)
+          {
+            SU3* um[3];
+            SU3 t0, t1;
+
+            um[0] = &u[link(nnm[nnp[s][mu]][nu], nu)];
+            um[1] = &u[link(nnm[s][nu], mu)];
+            um[2] = &u[link(nnm[s][nu], nu)];
+
+            u_mul(&t0, um[1], um[0]);
+            u_dagger(&t0);
+            u_mul(&t1, &t0, um[2]);
+            u_accum(&staple, &t1);
+          }
+
+
+      for (int ihit = 0; ihit < METRO_NHIT; ihit++) {
+        SU3 unew;
+        u_metro_offer(&unew, &ud[l]);
+
+        if (u_metro_accept(&staple, &ud[l], &unew)) {
+          u_copy(&ud[l], &unew);
+        }
+      }
+    }
+  }
+
+private:
+  double *acc;
+  SU3 *ud;
+  int *nnpd;
+  int *nnmd;
+};
+
+double u_sweep_metro_gpu(SU3 *d_ud, int *d_nnpd, int *d_nnmd) {
+  double h_acc = 0.0;
+
+  {
+    queue queue(gpu_selector{});
+
+    // Allocate and copy data to the device
+    buffer<double, 1> accBuffer(&h_acc, range<1>(1));
+    buffer<SU3, 1> d_ud_buffer(d_ud, range<1>(NSITE * 4));
+    buffer<int, 1> d_nnpd_buffer(d_nnpd, range<1>(NSITE * 4));
+    buffer<int, 1> d_nnmd_buffer(d_nnmd, range<1>(NSITE * 4));
+
+    // Launch the kernel
+    queue.submit([&](handler &cgh) {
+      auto accAcc = accBuffer.get_access<access::mode::write>(cgh);
+      auto ud = d_ud_buffer.get_access<access::mode::read_write>(cgh);
+      auto nnpd = d_nnpd_buffer.get_access<access::mode::read>(cgh);
+      auto nnmd = d_nnmd_buffer.get_access<access::mode::read>(cgh);
+
+      cgh.parallel_for<class MetroKernel>(range<1>(NSITE * 4), MetroFunctor(accAcc.get_pointer(), ud.get_pointer(), nnpd.get_pointer(), nnmd.get_pointer()));
+    });
+
+    // Copy results back to the host
+    queue.wait_and_throw();
+  }
+
+  return h_acc / (METRO_NHIT * NLINK);
+}
+
+
+
+
+
 double u_sweep_metro(void)
 {
-  int i, j;
+  //int i, j;
   int ihit;
   int x, y, z, t;
   int mu, nu;
