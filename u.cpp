@@ -35,6 +35,7 @@
 #include "defs.h"
 #include "rng.h"
 #include "geom.h"
+#include "geom.cpp"
 #include "u.h"
 #include <time.h>
 #include <sycl/sycl.hpp>
