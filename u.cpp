@@ -95,7 +95,7 @@ double u_plaq(void) {
       auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
 
       // Execute the parallel_for algorithm on the GPU
-      cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), [=](sycl::id<1> idx, auto& plaqLoc) {
+      cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), sycl::reduction(plaqAcc, 0.0, std::plus<double>{}), [=](sycl::id<1> idx, auto& plaqLoc) {
           int t = idx / (LS * LS * LS);
           int z = (idx / (LS * LS)) % LS;
           int y = (idx / LS) % LS;
