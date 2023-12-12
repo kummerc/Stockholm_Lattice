@@ -249,7 +249,11 @@ void u_plaq(void) {
   
   printf("%6d     %.6e     %.2e\n", i_METRO, plaq, acc);
   fflush(stdout);
+
   }
+  sycl::free(ud, queue);
+  sycl::free(nnpd, queue);
+  sycl::free(nnmd, queue);
   //return plaq;
 }
 
