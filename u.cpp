@@ -92,10 +92,13 @@ double u_plaq(void) {
   // Submit a command group to the queue
   queue.submit([&](sycl::handler& cgh) {
       // Get an accessor for the buffer
-      auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
+      auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);#
+
+      // Create local memory for reduction
+      sycl::accessor<double, 1, sycl::access::mode::read_write, sycl::access::target::local> localAcc(sycl::range<1>(1), cgh);
 
       // Execute the parallel_for algorithm on the GPU
-      cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), sycl::reduction(plaqAcc, 0.0, std::plus<double>{}), [=](sycl::id<1> idx, auto& plaqLoc) {
+      cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), [=](sycl::id<1> idx) {
           int t = idx / (LS * LS * LS);
           int z = (idx / (LS * LS)) % LS;
           int y = (idx / LS) % LS;
@@ -127,9 +130,11 @@ double u_plaq(void) {
                 plaqd += localPlaq;
               }
           }
-
-          // Use the reduction extension to sum up the results across all threads
-          plaqLoc.combine(plaqd);
+          // Sum up the local result to local memory for reduction
+          localAcc[0] = plaqd;
+          cgh.single_task<class ReductionTask>([=]() {
+              // Reduce the local result using atomic addition
+              sycl::atomic_ref<double>(plaqAcc[0]) += localAcc[0];
       });
   });
 
