@@ -78,7 +78,7 @@ void u_init(void)
 //! \f$\sum_p W_p = \sum_x \sum_\mu \sum_{\nu > \mu} U_{x,\mu} U_{x+\hat{\nu},\nu} U^\dagger_{x+\hat{\nu},\mu} U^\dagger_{x,\nu}\f$
 //--------------------------------------------------------------------------------------------------
 
-double u_plaq(void) {
+void u_plaq(void) {
   clock_t start_copy, end_copy, start_metro, end_metro;
   
   start_copy = clock();
