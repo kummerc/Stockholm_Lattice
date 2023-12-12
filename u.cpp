@@ -100,7 +100,7 @@ void u_plaq(void) {
   fflush(stdout);
   queue.copy<SU3>(u, ud, 4 * VOL);
   queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
-  queue.copy<int>(&(nnm[0][0]), nnmd, 4 * VOL);
+  //queue.copy<int>(&(nnm[0][0]), nnmd, 4 * VOL);
   
   // Submit a command group to the queue
   int i_METRO;
@@ -255,7 +255,7 @@ void u_plaq(void) {
   }
   sycl::free(ud, queue);
   sycl::free(nnpd, queue);
-  sycl::free(nnmd, queue);
+  //sycl::free(nnmd, queue);
   //return plaq;
 }
 
