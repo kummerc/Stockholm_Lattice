@@ -33,9 +33,9 @@
 #---------------------------------------------------------------------------------------------------
 
 TARGET   = uedu
-SRC      = main.cpp common.cpp geom.cpp rng.cpp u.cpp
-CC       = icpx
-CFLAGS   = -O3 -DU_SIMPLE -fsycl
+SRC      = main.cpp common.cpp rng.cpp u.cpp
+CC       = acpp
+CFLAGS   = -O3 -DU_SIMPLE
 
 .PHONY: clean veryclean dep
 
