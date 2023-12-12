@@ -187,8 +187,8 @@ void u_plaq(void) {
         accLoc.combine(accd);
 	//acc = accLoc;
       });
-      queue.wait()
     });
+    queue.wait();
     
     auto accHostAcc = accBuffer.get_access<sycl::access::mode::read>();
     acc = accHostAcc[0];
