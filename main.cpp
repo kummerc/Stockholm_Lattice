@@ -63,20 +63,21 @@ int main()
 
   start = clock();  
   // Update gauge fields and print plaquette
-  for (i = 0; i < METRO_NSWEEP; i++)
+  for (i = 0; i < 1; i++)
   {
     double acc;
-    start_metro = clock();
-    acc = u_sweep_metro();
-    end_metro = clock();
-    printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
+    //start_metro = clock();
+    //acc = u_sweep_metro();
+    //end_metro = clock();
+    //printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
 
-    start_plaq = clock();
-    printf("%6d     %.6e     %.2e\n", i, u_plaq(), acc);
-    end_plaq = clock();
-    printf("Time u_sweep_plaq(): %f s\n", ((double) (end_plaq - start_plaq)) / CLOCKS_PER_SEC);
-    printf("##################################################################################\n");
-    fflush(stdout);
+    //start_plaq = clock();
+    //printf("%6d     %.6e     %.2e\n", i, u_plaq(), acc);
+    //end_plaq = clock();
+    //printf("Time u_sweep_plaq(): %f s\n", ((double) (end_plaq - start_plaq)) / CLOCKS_PER_SEC);
+    //printf("##################################################################################\n");
+    //    fflush(stdout);
+    u_plaq();
   }
   end = clock();
   time_taken = ((double) (end - start)) / CLOCKS_PER_SEC;

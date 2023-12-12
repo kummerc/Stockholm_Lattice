@@ -79,7 +79,7 @@ void u_init(void)
 //--------------------------------------------------------------------------------------------------
 
 double u_plaq(void) {
-  clock_t start_copy, end_copy;
+  clock_t start_copy, end_copy, start_metro, end_metro;
   
   start_copy = clock();
   double plaq;
@@ -104,6 +104,13 @@ double u_plaq(void) {
   //queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
 
   // Submit a command group to the queue
+  int i;
+  double acc;
+  for (i=0; i<METRO_NSWEEP; i++){
+    start_metro = clock();
+    acc = u_sweep_metro();
+     end_metro = clock();
+    printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
   queue.submit([&](sycl::handler& cgh) {
       // Get an accessor for the buffer
       auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
@@ -152,6 +159,9 @@ double u_plaq(void) {
 
   // Normalize by the number of lattice sites and the number of directions
   plaq /= 18. * VOL;
+  printf("%6d     %.6e     %.2e\n", i, plaq, acc);
+  fflush(stdout);
+  }
   return plaq;
 }
 
