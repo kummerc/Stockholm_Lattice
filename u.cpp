@@ -185,12 +185,13 @@ void u_plaq(void) {
       	  }
         } 
         accLoc.combine(accd);
+	acc = accLoc;
       });
     });
     
     //auto accHostAcc = accBuffer.get_access<sycl::access::mode::read>();
     //acc = accHostAcc[0];
-    acc = accLoc;
+ 
     queue.wait();
     //acc = u_sweep_metro(); 
     end_metro = clock();
