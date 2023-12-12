@@ -90,7 +90,7 @@ double u_plaq(void) {
   SU3 *ud = sycl::malloc_device<SU3>(4 * VOL, queue);
   int *nnpd = sycl::malloc_device<int>(4 * VOL, queue);
   queue.copy<SU3>(u, ud, 4 * VOL);
-  queue.copy<int>(nnp, nnpd, 4 * VOL);
+  queue.copy<int>(&nnp, nnpd, 4 * VOL);
 
   // Submit a command group to the queue
   queue.submit([&](sycl::handler& cgh) {
