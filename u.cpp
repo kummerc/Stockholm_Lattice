@@ -365,7 +365,7 @@ double u_sweep_metro_gpu(SU3 *d_ud, int *d_nnpd, int *d_nnmd) {
       auto nnpd = d_nnpd_buffer.get_access<sycl::access::mode::read>(cgh);
       auto nnmd = d_nnmd_buffer.get_access<sycl::access::mode::read>(cgh);
 
-      cgh.parallel_for<class MetroKernel>(range<1>(NSITE * 4), MetroFunctor(accAcc.get_pointer(), ud.get_pointer(), nnpd.get_pointer(), nnmd.get_pointer()));
+      cgh.parallel_for<class MetroKernel>(range<1>(VOL * 4), MetroFunctor(accAcc.get_pointer(), ud.get_pointer(), nnpd.get_pointer(), nnmd.get_pointer()));
     });
 
     // Copy results back to the host
