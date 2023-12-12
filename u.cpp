@@ -94,8 +94,11 @@ double u_plaq(void) {
       // Get an accessor for the buffer
       auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
 
+      // Define local memory for partial results within a workgroup
+      sycl::accessor<double, 1, sycl::access::mode::read_write, sycl::access::target::local> localPlaqAcc(sycl::range<1>(cgh.get_local_range().size()));
+
       // Execute the parallel_for algorithm on the GPU
-      cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), sycl::reduction(plaqAcc, 0.0, std::plus<double>{}),[=](sycl::id<1> idx, auto& plaqLoc) {
+      cgh.parallel_for<class PlaquetteKernel>(sycl::range<1>(LT * LS * LS * LS), [=](sycl::id<1> idx) {
           int t = idx / (LS * LS * LS);
           int z = (idx / (LS * LS)) % LS;
           int y = (idx / LS) % LS;
@@ -127,9 +130,27 @@ double u_plaq(void) {
                 plaqd += localPlaq;
               }
           }
+          double localPlaq = plaqd;
 
-          // Use the reduction extension to sum up the results across all threads
-          plaqLoc.combine(plaqd);
+          // Perform parallel reduction within a workgroup
+          for (size_t stride = cgh.get_local_range().size() / 2; stride > 0; stride /= 2) {
+              cgh.parallel_for_work_group<class PlaquetteReduction>(sycl::range<1>(cgh.get_local_range().size()), [=](sycl::group<1> group) {
+                  auto localId = group.get_local_id(0);
+
+                  if (localId < stride) {
+                      localPlaqAcc[localId] += localPlaqAcc[localId + stride];
+                  }
+              });
+              cgh.parallel_for_work_group<class PlaquetteBarrier>(sycl::range<1>(1), [=](sycl::group<1> group) {
+                  group.wait();
+              });
+          }
+
+          // Store the reduced result in plaqAcc[0]
+          if (cgh.get_local_id(0) == 0) {
+              localPlaqAcc[0] += localPlaq;
+              plaqAcc[0] = localPlaqAcc[0];
+          }
       });
   });
 
