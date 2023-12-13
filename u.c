@@ -36,7 +36,7 @@
 #include "rng.h"
 #include "geom.h"
 #include "u.h"
-#include <time.h>
+//#include <time.h>
 // Include specialized functions
 #if defined(U_SIMPLE)
 #include "u-simple.inc"
@@ -82,7 +82,6 @@ double u_plaq(void)
   int mu, nu;
   int s, l;
   double plaq;
-  clock_t start_copy, end_copy, start_metro, end_metro;
   plaq = 0.0;
 
   for (t = 0; t < LT; t++)
