@@ -42,8 +42,8 @@
 #include <complex>
 
 // Simulation parameters
-#define LS		8			//!< Lattice size in spatial direction
-#define LT		8			//!< Lattice size in temporal direction
+#define LS		16			//!< Lattice size in spatial direction
+#define LT		16			//!< Lattice size in temporal direction
 
 #define BETA		6.0			//!< Gauge coupling constant
 #define UINIT		cold			//!< hot or cold start

@@ -79,7 +79,9 @@ void u_init(void)
 //--------------------------------------------------------------------------------------------------
 
 void u_plaq(void) {
-  clock_t start_copy, end_copy, start_metro, end_metro;
+  clock_t start_copy, end_copy, start_metro, end_metro, start_action, end_action;
+  double total_copy;
+  total_copy=0;
   
   start_copy = clock();
   double plaq;
@@ -106,13 +108,18 @@ void u_plaq(void) {
   // Submit a command group to the queue
   int i;
   double acc;
+
+  queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
   for (i=0; i<METRO_NSWEEP; i++){
     start_metro = clock();
     acc = u_sweep_metro();
      end_metro = clock();
     printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
+
+    start_action = clock();
     queue.copy<SU3>(u, ud, 4 * VOL);
-    queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
+    
+    
   queue.submit([&](sycl::handler& cgh) {
       // Get an accessor for the buffer
       auto plaqAcc = plaqBuffer.get_access<sycl::access::mode::write>(cgh);
@@ -158,12 +165,15 @@ void u_plaq(void) {
   // Read the reduced result back to the host
   auto plaqHostAcc = plaqBuffer.get_access<sycl::access::mode::read>();
   plaq = plaqHostAcc[0];
-
   // Normalize by the number of lattice sites and the number of directions
   plaq /= 18. * VOL;
+  end_action = clock();
+  total_copy += ((double) (end_action - start_action)) / CLOCKS_PER_SEC;
+  //printf("Time p_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
   printf("%6d     %.6e     %.2e\n", i, plaq, acc);
   fflush(stdout);
   }
+  printf("Time action: %f s\n", total_copy);
   //return plaq;
 }
 
