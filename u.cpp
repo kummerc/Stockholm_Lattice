@@ -83,7 +83,7 @@ void u_plaq(void) {
   double total_copy;
   total_copy=0;
   
-  start_copy = clock();
+  //start_copy = clock();
   double plaq;
 
   // Create a buffer to store the result
@@ -94,10 +94,10 @@ void u_plaq(void) {
 
   SU3 *ud = sycl::malloc_device<SU3>(4 * VOL, queue);
   int *nnpd = sycl::malloc_device<int>(4 * VOL, queue);
-  end_copy = clock();
-  printf("Time u_copy_plaq(): %f s\n", ((double) (end_copy - start_copy)) / CLOCKS_PER_SEC);
-  printf("##################################################################################\n");
-  fflush(stdout);
+  //end_copy = clock();
+  //printf("Time u_copy_plaq(): %f s\n", ((double) (end_copy - start_copy)) / CLOCKS_PER_SEC);
+  //printf("##################################################################################\n");
+  //fflush(stdout);
   //queue.copy<SU3>(u, ud, 4 * VOL);
   //int *nnph=nnp;
   //queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
@@ -111,10 +111,10 @@ void u_plaq(void) {
 
   queue.copy<int>(&(nnp[0][0]), nnpd, 4 * VOL);
   for (i=0; i<METRO_NSWEEP; i++){
-    start_metro = clock();
+    //start_metro = clock();
     acc = u_sweep_metro();
-     end_metro = clock();
-    printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
+    //end_metro = clock();
+    //printf("Time u_sweep_metro(): %f s\n", ((double) (end_metro - start_metro)) / CLOCKS_PER_SEC);
 
     start_action = clock();
     queue.copy<SU3>(u, ud, 4 * VOL);
